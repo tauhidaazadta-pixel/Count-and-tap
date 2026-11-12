@@ -358,16 +358,18 @@
       loadRound();
     }
 
+    // FIXED: This function now selects 4 unique numbers without infinite loops
     function generateOptions(correctNum) {
-      let opts = [correctNum];
-      while(opts.length < 4) {
-        let diff = Math.floor(Math.random() * 5) - 2; // -2 to +2
-        let num = correctNum + diff;
-        if(num > 0 && num <= 10 && !opts.includes(num)) {
-          opts.push(num);
-        }
-      }
-      return shuffle(opts);
+      let allNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      // Remove the correct number from the pool
+      let wrongNumbers = allNumbers.filter(num => num !== correctNum);
+      
+      // Shuffle wrong numbers and pick 3
+      wrongNumbers = shuffle(wrongNumbers).slice(0, 3);
+      
+      // Combine correct + 3 wrong, then shuffle them for display
+      let finalOptions = shuffle([correctNum, ...wrongNumbers]);
+      return finalOptions;
     }
 
     function loadRound() {
@@ -384,7 +386,9 @@
       const count = Math.floor(Math.random() * 10) + 1; 
       
       questionText.textContent = `How many ${item.name}?`;
-      speak(`Count the ${item.name}`);
+      
+      // Delay speech slightly so it doesn't clash with previous sounds
+      setTimeout(() => speak(`Count the ${item.name}`), 300);
       
       // Render Emojis with staggered animation
       objectContainer.innerHTML = '';
@@ -396,7 +400,7 @@
         objectContainer.appendChild(span);
       }
 
-      // Generate Options
+      // Generate Options using the safe function
       const options = generateOptions(count);
       optionsArea.innerHTML = '';
       
