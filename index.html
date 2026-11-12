@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Count & Tap - Ginti Seekhein</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+      --text: #2d3436;
+      --purple: #6c5ce7;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      height: 100dvh;
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      color: var(--text);
+    }
+
+    /* --- SCREENS --- */
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+    .screen.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    /* --- START SCREEN --- */
+    #startScreen { text-align: center; }
+    .title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 3.5rem;
+      color: #fff;
+      text-shadow: 3px 3px 0 #d35400, 6px 6px 0 rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+      line-height: 1.1;
+    }
+    .subtitle {
+      font-size: 1.2rem;
+      color: #fff;
+      font-weight: 900;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+    }
+    .big-btn {
+      background: linear-gradient(to bottom, #00b894, #00cec9);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      padding: 20px 50px;
+      font-family: 'Baloo 2', cursive;
+      font-size: 1.8rem;
+      cursor: pointer;
+      box-shadow: 0 8px 0 #008f72;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .big-btn:active { transform: translateY(8px); box-shadow: 0 0px 0 #008f72; }
+
+    /* --- GAME SCREEN --- */
+    #gameScreen {
+      justify-content: flex-start;
+      padding-top: 20px;
+      overflow-y: auto;
+    }
+
+    .header {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-shrink: 0;
+    }
+    
+    .score-box {
+      font-family: 'Baloo 2', cursive;
+      font-size: 1.4rem;
+      color: var(--purple);
+      background: rgba(255,255,255,0.9);
+      padding: 8px 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    }
+
+    .question-text {
+      font-family: 'Baloo 2', cursive;
+      font-size: 1.8rem;
+      color: #fff;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    /* Display Area for Objects */
+    .object-container {
+      width: 100%;
+      max-width: 400px;
+      min-height: 220px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 25px;
+      padding: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      border: 4px solid #fff;
+    }
+
+    .count-emoji {
+      font-size: 3.5rem;
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      opacity: 0;
+      transform: scale(0);
+    }
+    
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Options Area */
+    .options-area {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .num-btn {
+      background: #fff;
+      border: 3px solid #fff;
+      border-radius: 20px;
+      aspect-ratio: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Baloo 2', cursive;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--purple);
+      cursor: pointer;
+      box-shadow: 0 6px 0 #dfe6e9;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .num-btn:active { 
+      transform: translateY(6px); 
+      box-shadow: 0 0px 0 #dfe6e9; 
+    }
+
+    .num-btn.correct {
+      background: #d4edda;
+      border-color: #00b894;
+      box-shadow: 0 6px 0 #00b894;
+      color: #00b894;
+      animation: pop 0.4s ease;
+    }
+
+    .num-btn.wrong {
+      background: #f8d7da;
+      border-color: #dc3545;
+      box-shadow: 0 6px 0 #dc3545;
+      color: #dc3545;
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes pop { 0%{transform:scale(1);} 50%{transform:scale(1.15);} 100%{transform:scale(1);} }
+    @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);} }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      font-size: 2rem;
+      pointer-events: none;
+      z-index: 9999;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* --- WIN SCREEN --- */
+    #winScreen h1 {
+      font-family: 'Baloo 2', cursive;
+      font-size: 3.5rem;
+      color: #fff;
+      text-shadow: 2px 2px 0 #00b894, 4px 4px 0 rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+    }
+    .star-icon {
+      font-size: 6rem;
+      animation: bounce 1s infinite alternate;
+      margin: 20px 0;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- 1. START SCREEN -->
+  <div id="startScreen" class="screen active">
+    <h1 class="title">Count<br>& Tap</h1>
+    <p class="subtitle">गिनती करो और सही नंबर दबाओ! 🔢</p>
+    <button class="big-btn" onclick="startGame()">शुरू करें</button>
+  </div>
+
+  <!-- 2. GAME SCREEN -->
+  <div id="gameScreen" class="screen">
+    <div class="header">
+      <div class="score-box">Score: <span id="score">0</span></div>
+      <div class="score-box">Round: <span id="round">1</span>/10</div>
+    </div>
+
+    <div class="question-text" id="questionText">How many apples?</div>
+
+    <div class="object-container" id="objectContainer">
+      <!-- Emojis will appear here -->
+    </div>
+
+    <div class="options-area" id="optionsArea">
+      <!-- Number buttons will be generated here -->
+    </div>
+  </div>
+
+  <!-- 3. WIN SCREEN -->
+  <div id="winScreen" class="screen">
+    <h1 class="title">शाबाश!</h1>
+    <div class="star-icon">🥇</div>
+    <p class="subtitle" id="winText">तुमने पूरी गिनती सीख ली!</p>
+    <button class="big-btn" onclick="startGame()" style="margin-top: 20px;">फिर से खेलें 🔄</button>
+  </div>
+
+  <script>
+    /* =========================================================
+       1. DATA & STATE
+       ========================================================= */
+    const ITEM_POOL = [
+      { icon: '🍎', name: 'apples' },
+      { icon: '🐶', name: 'dogs' },
+      { icon: '🚗', name: 'cars' },
+      { icon: '⭐', name: 'stars' },
+      { icon: '🎈', name: 'balloons' },
+      { icon: '🐱', name: 'cats' },
+      { icon: '🍌', name: 'bananas' },
+      { icon: '🚀', name: 'rockets' }
+    ];
+
+    let score = 0;
+    let round = 1;
+    const MAX_ROUNDS = 10;
+    let isAnswering = false;
+
+    const questionText = document.getElementById('questionText');
+    const objectContainer = document.getElementById('objectContainer');
+    const optionsArea = document.getElementById('optionsArea');
+    const scoreEl = document.getElementById('score');
+    const roundEl = document.getElementById('round');
+    
+    const screens = {
+      start: document.getElementById('startScreen'),
+      game: document.getElementById('gameScreen'),
+      win: document.getElementById('winScreen')
+    };
+
+    /* =========================================================
+       2. AUDIO & SPEECH
+       ========================================================= */
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, type, duration, vol=0.1) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function sfxCorrect() {
+      playTone(600, 'sine', 0.1); 
+      setTimeout(() => playTone(800, 'sine', 0.2), 100);
+    }
+    function sfxWrong() { playTone(200, 'sawtooth', 0.2, 0.1); }
+    
+    function speak(text) {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = 'en-US';
+      utt.rate = 0.85;
+      const voices = speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Samantha')));
+      if (preferred) utt.voice = preferred;
+      speechSynthesis.speak(utt);
+    }
+
+    /* =========================================================
+       3. GAME LOGIC
+       ========================================================= */
+    function showScreen(name) {
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      screens[name].classList.add('active');
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startGame() {
+      initAudio();
+      score = 0;
+      round = 1;
+      isAnswering = false;
+      scoreEl.textContent = score;
+      
+      showScreen('game');
+      loadRound();
+    }
+
+    function generateOptions(correctNum) {
+      let opts = [correctNum];
+      while(opts.length < 4) {
+        let diff = Math.floor(Math.random() * 5) - 2; // -2 to +2
+        let num = correctNum + diff;
+        if(num > 0 && num <= 10 && !opts.includes(num)) {
+          opts.push(num);
+        }
+      }
+      return shuffle(opts);
+    }
+
+    function loadRound() {
+      if (round > MAX_ROUNDS) {
+        winGame();
+        return;
+      }
+
+      roundEl.textContent = round;
+      isAnswering = false;
+
+      // Pick random item and count (1 to 10)
+      const item = ITEM_POOL[Math.floor(Math.random() * ITEM_POOL.length)];
+      const count = Math.floor(Math.random() * 10) + 1; 
+      
+      questionText.textContent = `How many ${item.name}?`;
+      speak(`Count the ${item.name}`);
+      
+      // Render Emojis with staggered animation
+      objectContainer.innerHTML = '';
+      for(let i=0; i<count; i++) {
+        const span = document.createElement('span');
+        span.className = 'count-emoji';
+        span.textContent = item.icon;
+        span.style.animationDelay = (i * 0.1) + 's';
+        objectContainer.appendChild(span);
+      }
+
+      // Generate Options
+      const options = generateOptions(count);
+      optionsArea.innerHTML = '';
+      
+      options.forEach(num => {
+        const btn = document.createElement('button');
+        btn.className = 'num-btn';
+        btn.textContent = num;
+        btn.onclick = () => handleAnswer(btn, num, count, item.name);
+        optionsArea.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(btn, selectedNum, correctCount, itemName) {
+      if (isAnswering) return;
+
+      if (selectedNum === correctCount) {
+        // CORRECT
+        isAnswering = true;
+        btn.classList.add('correct');
+        sfxCorrect();
+        score += 10;
+        scoreEl.textContent = score;
+
+        speak(`Yes! ${correctCount} ${itemName}!`);
+        createConfetti(15);
+
+        // Next round after delay
+        setTimeout(() => {
+          round++;
+          loadRound();
+        }, 1800);
+
+      } else {
+        // WRONG
+        sfxWrong();
+        btn.classList.add('wrong');
+        
+        setTimeout(() => {
+          btn.classList.remove('wrong');
+        }, 400);
+      }
+    }
+
+    function winGame() {
+      showScreen('win');
+      speak("Wow! You are a counting champion!");
+      createConfetti(60);
+    }
+
+    /* =========================================================
+       4. VISUAL EFFECTS
+       ========================================================= */
+    function createConfetti(count = 40) {
+      const icons = ['⭐', '🌟', '✨', '🎈', '🎉'];
+      for (let i = 0; i < count; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.textContent = icons[Math.floor(Math.random() * icons.length)];
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.top = '-50px';
+        c.style.animationDuration = (Math.random() * 1.5 + 1.5) + 's';
+        c.style.fontSize = (Math.random() * 20 + 20) + 'px';
+        
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 3500);
+      }
+    }
+
+    if ("speechSynthesis" in window) {
+      speechSynthesis.getVoices();
+    }
+
+  </script>
+</body>
+</html>
